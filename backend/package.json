@@ -1,54 +1,41 @@
 {
   "name": "matrimony-backend",
   "version": "1.0.0",
-  "description": "Complete Matrimony Web Application Backend",
+  "description": "MEAN Stack Matrimony Web Application Backend",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "seed": "node scripts/seed.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
     "matrimony",
-    "marriage",
-    "dating",
-    "MEAN",
+    "mean-stack",
+    "nodejs",
     "mongodb",
-    "express",
-    "nodejs"
+    "express"
   ],
-  "author": "Your Name",
-  "license": "MIT",
+  "author": "",
+  "license": "ISC",
   "dependencies": {
-    "bcryptjs": "^2.4.3",
-    "cloudinary": "^1.41.0",
-    "compression": "^1.7.4",
+    "bcryptjs": "^3.0.3",
+    "compression": "^1.8.1",
     "cors": "^2.8.5",
-    "dotenv": "^16.3.1",
-    "express": "^4.18.2",
-    "express-mongo-sanitize": "^2.2.0",
-    "express-rate-limit": "^7.0.1",
-    "express-validator": "^7.0.1",
-    "helmet": "^7.0.0",
-    "hpp": "^0.2.3",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.2.1",
+    "express-validator": "^7.3.0",
+    "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
-    "lodash": "^4.17.21",
-    "moment": "^2.29.4",
-    "mongoose": "^7.6.3",
-    "morgan": "^1.10.0",
-    "multer": "^1.4.5-lts.1",
-    "multer-storage-cloudinary": "^4.0.0",
-    "nodemailer": "^6.9.6",
-    "razorpay": "^2.9.2",
-    "stripe": "^13.8.0",
-    "uuid": "^9.0.1"
+    "mongoose": "^8.20.0",
+    "morgan": "^1.10.1",
+    "multer": "^2.0.2",
+    "nodemailer": "^7.0.10"
   },
   "devDependencies": {
-    "nodemon": "^3.0.1"
+    "nodemon": "^3.0.2"
   },
   "engines": {
-    "node": ">=18.0.0",
-    "npm": ">=9.0.0"
+    "node": ">=18.0.0"
   }
 }
