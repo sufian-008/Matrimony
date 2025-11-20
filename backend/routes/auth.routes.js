@@ -1,37 +1,64 @@
 const express = require('express');
 const router = express.Router();
-const authController = require('../controllers/auth.controller');
-const { authenticate } = require('../middleware/auth.middleware');
 const { body } = require('express-validator');
+const { validate } = require('../middleware/validator');
+const { protect } = require('../middleware/auth');
+const {
+  register,
+  verifyOTP,
+  resendOTP,
+  login,
+  forgotPassword,
+  resetPassword,
+  getMe,
+  updatePassword,
+  logout
+} = require('../controllers/auth.controller');
 
-// Validation middleware
+// Validation rules
 const registerValidation = [
-  body('email').isEmail().normalizeEmail().withMessage('Valid email is required'),
-  body('phone').matches(/^[6-9]\d{9}$/).withMessage('Valid 10-digit phone number is required'),
-  body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
-  body('firstName').notEmpty().trim().withMessage('First name is required'),
-  body('lastName').notEmpty().trim().withMessage('Last name is required'),
-  body('gender').isIn(['male', 'female', 'other']).withMessage('Valid gender is required'),
-  body('dateOfBirth').isISO8601().withMessage('Valid date of birth is required')
+  body('email').isEmail().normalizeEmail().withMessage('Please provide a valid email'),
+  body('password')
+    .isLength({ min: 6 })
+    .withMessage('Password must be at least 6 characters long')
+];
+
+const verifyOTPValidation = [
+  body('email').isEmail().normalizeEmail(),
+  body('otp').isLength({ min: 6, max: 6 }).withMessage('OTP must be 6 digits')
 ];
 
 const loginValidation = [
-  body('email').isEmail().normalizeEmail().withMessage('Valid email is required'),
+  body('email').isEmail().normalizeEmail(),
   body('password').notEmpty().withMessage('Password is required')
 ];
 
-// Public Routes
-router.post('/register', registerValidation, authController.register);
-router.post('/verify-otp', authController.verifyOTP);
-router.post('/resend-otp', authController.resendOTP);
-router.post('/login', loginValidation, authController.login);
-router.post('/forgot-password', authController.forgotPassword);
-router.post('/reset-password', authController.resetPassword);
+const forgotPasswordValidation = [
+  body('email').isEmail().normalizeEmail()
+];
 
-// Protected Routes
-router.post('/change-password', authenticate, authController.changePassword);
-router.post('/logout', authenticate, authController.logout);
-router.get('/me', authenticate, authController.getCurrentUser);
-router.patch('/update-profile-basic', authenticate, authController.updateBasicInfo);
+const resetPasswordValidation = [
+  body('password')
+    .isLength({ min: 6 })
+    .withMessage('Password must be at least 6 characters long')
+];
+
+const updatePasswordValidation = [
+  body('currentPassword').notEmpty().withMessage('Current password is required'),
+  body('newPassword')
+    .isLength({ min: 6 })
+    .withMessage('New password must be at least 6 characters long')
+];
+
+// Routes
+router.post('/register', registerValidation, validate, register);
+router.post('/verify-otp', verifyOTPValidation, validate, verifyOTP);
+router.post('/resend-otp', forgotPasswordValidation, validate, resendOTP);
+router.post('/login', loginValidation, validate, login);
+router.post('/forgot-password', forgotPasswordValidation, validate, forgotPassword);
+router.post('/reset-password/:resetToken', resetPasswordValidation, validate, resetPassword);
+router.get('/me', protect, getMe);
+router.put('/update-password', protect, updatePasswordValidation, validate, updatePassword);
+router.post('/logout', protect, logout);
 
 module.exports = router;

@@ -1,15 +1,31 @@
 const express = require('express');
 const router = express.Router();
-const matchController = require('../controllers/match.controller');
-const { authenticate } = require('../middleware/auth.middleware');
+const { protect, checkVerified, checkProfileCompleted } = require('../middleware/auth');
+const {
+  getMatches,
+  generateMatches,
+  markAsViewed
+} = require('../controllers/match.controller');
 
-router.post('/send-interest', authenticate, matchController.sendInterest);
-router.get('/interests/received', authenticate, matchController.getReceivedInterests);
-router.get('/interests/sent', authenticate, matchController.getSentInterests);
-router.patch('/interests/:matchId/respond', authenticate, matchController.respondToInterest);
-router.get('/matches', authenticate, matchController.getMatches);
-router.post('/shortlist', authenticate, matchController.addToShortlist);
-router.get('/shortlist', authenticate, matchController.getShortlist);
-router.delete('/shortlist/:shortlistId', authenticate, matchController.removeFromShortlist);
+// Preference routes
+const {
+  setPreferences,
+  getPreferences,
+  deletePreferences
+} = require('../controllers/preference.controller');
+
+// All routes require authentication, verified email, and completed profile
+router.use(protect, checkVerified, checkProfileCompleted);
+
+// Match routes
+router.get('/', getMatches);
+router.post('/generate', generateMatches);
+router.put('/:matchId/view', markAsViewed);
+
+// Preference routes
+router.route('/preferences')
+  .get(getPreferences)
+  .post(setPreferences)
+  .delete(deletePreferences);
 
 module.exports = router;

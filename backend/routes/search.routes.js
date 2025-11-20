@@ -1,12 +1,19 @@
 const express = require('express');
 const router = express.Router();
-const searchController = require('../controllers/search.controller');
-const { authenticate } = require('../middleware/auth.middleware');
+const { protect, checkVerified, checkProfileCompleted } = require('../middleware/auth');
+const {
+  searchProfiles,
+  searchById,
+  advancedSearch,
+  getRecentProfiles
+} = require('../controllers/search.controller');
 
-router.get('/basic', authenticate, searchController.basicSearch);
-router.get('/advanced', authenticate, searchController.advancedSearch);
-router.get('/keyword', authenticate, searchController.keywordSearch);
-router.get('/by-id/:profileId', authenticate, searchController.searchById);
-router.get('/suggestions', authenticate, searchController.getSearchSuggestions);
+// All routes require authentication, verified email, and completed profile
+router.use(protect, checkVerified, checkProfileCompleted);
+
+router.get('/', searchProfiles);
+router.get('/id/:profileId', searchById);
+router.post('/advanced', advancedSearch);
+router.get('/recent', getRecentProfiles);
 
 module.exports = router;
