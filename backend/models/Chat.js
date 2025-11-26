@@ -7,44 +7,60 @@ const chatSchema = new mongoose.Schema({
     required: true
   }],
   messages: [{
-    sender: {
+    senderId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true
     },
-    content: {
+    receiverId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    },
+    message: {
       type: String,
-      required: true,
-      maxlength: 1000
+      required: true
+    },
+    messageType: {
+      type: String,
+      enum: ['text', 'image', 'file'],
+      default: 'text'
     },
     isRead: {
       type: Boolean,
       default: false
     },
     readAt: Date,
-    createdAt: {
+    sentAt: {
       type: Date,
       default: Date.now
     }
   }],
   lastMessage: {
-    content: String,
-    sender: {
+    text: String,
+    sentAt: Date,
+    senderId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User'
-    },
-    createdAt: Date
+    }
   },
-  isActive: {
-    type: Boolean,
-    default: true
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now
   }
-}, {
-  timestamps: true
 });
 
-// Index for finding chats between users
+// Create index for faster queries
 chatSchema.index({ participants: 1 });
-chatSchema.index({ 'messages.sender': 1, 'messages.isRead': 1 });
+chatSchema.index({ 'messages.sentAt': -1 });
+
+chatSchema.pre('save', function(next) {
+  this.updatedAt = Date.now();
+  next();
+});
 
 module.exports = mongoose.model('Chat', chatSchema);

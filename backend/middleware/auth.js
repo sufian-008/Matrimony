@@ -1,12 +1,10 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
-// Protect routes - verify JWT token
 exports.protect = async (req, res, next) => {
   try {
     let token;
 
-    // Check if token exists in headers
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
       token = req.headers.authorization.split(' ')[1];
     }
@@ -19,10 +17,7 @@ exports.protect = async (req, res, next) => {
     }
 
     try {
-      // Verify token
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      
-      // Get user from token
       req.user = await User.findById(decoded.id).select('-password');
       
       if (!req.user) {
@@ -32,35 +27,29 @@ exports.protect = async (req, res, next) => {
         });
       }
 
-      // Check if user is active
       if (!req.user.isActive) {
-        return res.status(403).json({
+        return res.status(401).json({
           success: false,
-          message: 'Your account has been deactivated'
-        });
-      }
-
-      // Check if user is blocked
-      if (req.user.isBlocked) {
-        return res.status(403).json({
-          success: false,
-          message: 'Your account has been blocked'
+          message: 'User account is deactivated'
         });
       }
 
       next();
-    } catch (error) {
+    } catch (err) {
       return res.status(401).json({
         success: false,
-        message: 'Token is not valid'
+        message: 'Not authorized to access this route'
       });
     }
   } catch (error) {
-    next(error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: error.message
+    });
   }
 };
 
-// Authorize specific roles
 exports.authorize = (...roles) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {
@@ -71,34 +60,4 @@ exports.authorize = (...roles) => {
     }
     next();
   };
-};
-
-// Check if email is verified
-exports.checkVerified = async (req, res, next) => {
-  try {
-    if (!req.user.isVerified) {
-      return res.status(403).json({
-        success: false,
-        message: 'Please verify your email before accessing this resource'
-      });
-    }
-    next();
-  } catch (error) {
-    next(error);
-  }
-};
-
-// Check if profile is completed
-exports.checkProfileCompleted = async (req, res, next) => {
-  try {
-    if (!req.user.profileCompleted) {
-      return res.status(403).json({
-        success: false,
-        message: 'Please complete your profile before accessing this resource'
-      });
-    }
-    next();
-  } catch (error) {
-    next(error);
-  }
 };

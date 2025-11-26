@@ -7,88 +7,82 @@ const preferenceSchema = new mongoose.Schema({
     required: true,
     unique: true
   },
-  
+
   // Basic Preferences
-  lookingFor: {
-    type: String,
-    enum: ['male', 'female'],
-    required: true
+  ageRange: {
+    min: { type: Number, required: true },
+    max: { type: Number, required: true }
   },
-  ageFrom: {
-    type: Number,
-    required: true,
-    min: 18,
-    max: 100
-  },
-  ageTo: {
-    type: Number,
-    required: true,
-    min: 18,
-    max: 100
-  },
-  heightFrom: {
-    type: Number, // in cm
-    required: true
-  },
-  heightTo: {
-    type: Number, // in cm
-    required: true
+  heightRange: {
+    min: { type: Number }, // in cm
+    max: { type: Number }
   },
   maritalStatus: [{
     type: String,
     enum: ['never_married', 'divorced', 'widowed', 'separated']
   }],
-  
+
   // Location Preferences
-  countries: [String],
-  states: [String],
-  cities: [String],
-  
-  // Religion & Community
-  religions: [String],
-  castes: [String],
-  motherTongues: [String],
-  
-  // Education & Career
-  educations: [String],
-  occupations: [String],
-  annualIncomeFrom: String,
-  annualIncomeTo: String,
-  
-  // Lifestyle
+  location: {
+    countries: [{ type: String }],
+    states: [{ type: String }],
+    cities: [{ type: String }]
+  },
+
+  // Religious Preferences
+  religion: [{ type: String }],
+  caste: [{ type: String }],
+  dosham: { 
+    type: String, 
+    enum: ['yes', 'no', 'doesnt_matter'],
+    default: 'doesnt_matter'
+  },
+
+  // Professional Preferences
+  education: [{ type: String }],
+  occupation: [{ type: String }],
+  employedIn: [{
+    type: String,
+    enum: ['government', 'private', 'business', 'self_employed', 'not_working']
+  }],
+  annualIncome: {
+    min: { type: String },
+    max: { type: String }
+  },
+
+  // Lifestyle Preferences
   diet: [{
     type: String,
-    enum: ['vegetarian', 'non_vegetarian', 'eggetarian']
+    enum: ['vegetarian', 'non_vegetarian', 'eggetarian', 'doesnt_matter']
   }],
-  smoking: [{
+  smoking: {
     type: String,
-    enum: ['no', 'occasionally', 'yes']
-  }],
-  drinking: [{
-    type: String,
-    enum: ['no', 'occasionally', 'yes']
-  }],
-  
-  // Additional Preferences
-  physicalStatus: {
-    type: String,
-    enum: ['any', 'normal', 'physically_challenged'],
-    default: 'any'
+    enum: ['acceptable', 'not_acceptable', 'doesnt_matter'],
+    default: 'doesnt_matter'
   },
-  
-  // Preferences Weight (for matching algorithm)
-  weights: {
-    age: { type: Number, default: 10 },
-    height: { type: Number, default: 5 },
-    location: { type: Number, default: 8 },
-    education: { type: Number, default: 7 },
-    occupation: { type: Number, default: 6 },
-    religion: { type: Number, default: 9 },
-    income: { type: Number, default: 5 },
-    lifestyle: { type: Number, default: 4 }
-  }
-}, {
-  timestamps: true
+  drinking: {
+    type: String,
+    enum: ['acceptable', 'not_acceptable', 'doesnt_matter'],
+    default: 'doesnt_matter'
+  },
+
+  // Additional Preferences
+  familyType: [{
+    type: String,
+    enum: ['nuclear', 'joint', 'doesnt_matter']
+  }],
+  familyStatus: [{
+    type: String,
+    enum: ['middle_class', 'upper_middle_class', 'rich', 'affluent']
+  }],
+
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+});
+
+preferenceSchema.pre('save', function(next) {
+  this.updatedAt = Date.now();
+  next();
 });
 
 module.exports = mongoose.model('Preference', preferenceSchema);

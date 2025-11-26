@@ -1,37 +1,47 @@
 const mongoose = require('mongoose');
 
 const interactionSchema = new mongoose.Schema({
-  fromUser: {
+  fromUserId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
   },
-  toUser: {
+  toUserId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
   },
-  type: {
+  interactionType: {
     type: String,
-    enum: ['shortlist', 'interest', 'block'],
+    enum: ['interest', 'shortlist', 'favorite', 'block', 'view'],
     required: true
   },
   status: {
     type: String,
-    enum: ['pending', 'accepted', 'rejected', 'cancelled'],
+    enum: ['pending', 'accepted', 'rejected', 'active', 'removed'],
     default: 'pending'
   },
   message: {
     type: String,
     maxlength: 500
   },
-  respondedAt: Date
-}, {
-  timestamps: true
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now
+  }
 });
 
-// Compound index to prevent duplicate interactions
-interactionSchema.index({ fromUser: 1, toUser: 1, type: 1 }, { unique: true });
-interactionSchema.index({ toUser: 1, status: 1, type: 1 });
+// Compound index for faster queries
+interactionSchema.index({ fromUserId: 1, toUserId: 1, interactionType: 1 });
+interactionSchema.index({ toUserId: 1, interactionType: 1, status: 1 });
+
+interactionSchema.pre('save', function(next) {
+  this.updatedAt = Date.now();
+  next();
+});
 
 module.exports = mongoose.model('Interaction', interactionSchema);

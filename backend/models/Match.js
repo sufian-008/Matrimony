@@ -6,43 +6,41 @@ const matchSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
-  matchedUser: {
+  matchedUserId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
   },
   matchScore: {
     type: Number,
-    required: true,
     min: 0,
     max: 100
   },
-  matchDetails: {
-    ageScore: Number,
-    heightScore: Number,
-    locationScore: Number,
-    educationScore: Number,
-    occupationScore: Number,
-    religionScore: Number,
-    incomeScore: Number,
-    lifestyleScore: Number
+  matchedCriteria: [{
+    criteria: String,
+    matched: Boolean
+  }],
+  status: {
+    type: String,
+    enum: ['suggested', 'viewed', 'interested', 'rejected'],
+    default: 'suggested'
   },
-  isViewed: {
-    type: Boolean,
-    default: false
+  createdAt: {
+    type: Date,
+    default: Date.now
   },
-  viewedAt: Date,
-  isNotified: {
-    type: Boolean,
-    default: false
-  },
-  notifiedAt: Date
-}, {
-  timestamps: true
+  updatedAt: {
+    type: Date,
+    default: Date.now
+  }
 });
 
-// Index for efficient querying
-matchSchema.index({ userId: 1, matchScore: -1 });
-matchSchema.index({ userId: 1, isViewed: 1 });
+// Compound index to prevent duplicate matches
+matchSchema.index({ userId: 1, matchedUserId: 1 }, { unique: true });
+
+matchSchema.pre('save', function(next) {
+  this.updatedAt = Date.now();
+  next();
+});
 
 module.exports = mongoose.model('Match', matchSchema);

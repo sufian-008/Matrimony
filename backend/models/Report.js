@@ -11,9 +11,9 @@ const reportSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
-  reason: {
+  reportType: {
     type: String,
-    enum: ['fake_profile', 'inappropriate_content', 'harassment', 'spam', 'fraud', 'other'],
+    enum: ['fake_profile', 'inappropriate_content', 'harassment', 'spam', 'other'],
     required: true
   },
   description: {
@@ -28,20 +28,32 @@ const reportSchema = new mongoose.Schema({
   },
   actionTaken: {
     type: String,
-    enum: ['none', 'warning', 'profile_hidden', 'account_suspended', 'account_blocked'],
-    default: 'none'
+    enum: ['none', 'warning', 'suspended', 'banned']
+  },
+  adminNotes: {
+    type: String
   },
   reviewedBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   },
-  reviewNotes: String,
-  reviewedAt: Date
-}, {
-  timestamps: true
+  reviewedAt: Date,
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now
+  }
 });
 
 reportSchema.index({ reportedUser: 1, status: 1 });
-reportSchema.index({ reportedBy: 1 });
+reportSchema.index({ createdAt: -1 });
+
+reportSchema.pre('save', function(next) {
+  this.updatedAt = Date.now();
+  next();
+});
 
 module.exports = mongoose.model('Report', reportSchema);
