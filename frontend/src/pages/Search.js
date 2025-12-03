@@ -29,7 +29,7 @@ const Search = () => {
   const [loading, setLoading] = useState(false);
   const [profiles, setProfiles] = useState([]);
   const [filters, setFilters] = useState({
-    gender: '',
+    gender: '', // Male or Female
     ageRange: [21, 35],
     heightRange: [150, 180],
     maritalStatus: '',
@@ -40,18 +40,34 @@ const Search = () => {
   });
 
   const handleFilterChange = (field, value) => {
-    setFilters({ ...filters, [field]: value });
+    // Ensure gender is lowercase to match backend
+    setFilters({ 
+      ...filters, 
+      [field]: field === 'gender' ? value.toLowerCase() : value 
+    });
   };
 
   const handleSearch = async () => {
     setLoading(true);
     try {
-      // Use dev public profiles endpoint in development
-      const res = await api.get('/dev/profiles');
+      const params = {
+        gender: filters.gender, // Always Male/Female
+        ageMin: filters.ageRange[0],
+        ageMax: filters.ageRange[1],
+        heightMin: filters.heightRange[0],
+        heightMax: filters.heightRange[1],
+        maritalStatus: filters.maritalStatus || '',
+        education: filters.education || '',
+        occupation: filters.occupation || '',
+        location: filters.location || '',
+      };
+
+      const res = await api.get('/search/basic', { params });
       const data = res.data?.data || [];
       setProfiles(data);
     } catch (err) {
       console.error('Load profiles error', err);
+      toast.error('Failed to load profiles');
     } finally {
       setLoading(false);
     }
@@ -59,12 +75,10 @@ const Search = () => {
 
   const handleMessage = async (profile) => {
     try {
-      // Send initial message to start conversation
       await api.post('/chat/send', {
         receiverId: profile.userId,
         message: `Hi ${profile.personalInfo?.firstName}! I'm interested in your profile.`,
       });
-      
       toast.success('Conversation started! Redirecting to messages...');
       setTimeout(() => {
         navigate('/messages');
@@ -142,7 +156,6 @@ const Search = () => {
                     label="Gender"
                     onChange={(e) => handleFilterChange('gender', e.target.value)}
                   >
-                    <MenuItem value="">Any</MenuItem>
                     <MenuItem value="male">Male</MenuItem>
                     <MenuItem value="female">Female</MenuItem>
                   </Select>
@@ -166,8 +179,8 @@ const Search = () => {
                   value={filters.heightRange}
                   onChange={(e, value) => handleFilterChange('heightRange', value)}
                   valueLabelDisplay="auto"
-                  min={140}
-                  max={200}
+                  min={120}
+                  max={220}
                   sx={{ mb: 2 }}
                 />
                 <Typography variant="caption" color="text.secondary">

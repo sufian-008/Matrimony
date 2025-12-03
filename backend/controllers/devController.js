@@ -38,7 +38,7 @@ exports.createAdmin = async (req, res) => {
     });
 
     console.log('\n' + '='.repeat(50));
-    console.log('👑 ADMIN ACCOUNT CREATED');
+    console.log(' ADMIN ACCOUNT CREATED');
     console.log('='.repeat(50));
     console.log(`Email: ${email}`);
     console.log(`Phone: ${phone}`);
